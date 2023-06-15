@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
         default: []
     },
     following: {
-        type: Buffer,
+        type: Array,
         default: []
     },
     bio: {
@@ -60,6 +60,18 @@ userSchema.methods.generateAuthToken = async function () {
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
+}
+
+userSchema.statics.findByCredentials = async function (email, password) {
+    const user = await User.findOne({ email: email, emailVerified: true })
+    if (!user) {
+        throw new Error('user not found. Please check your email/verify your email!')
+    }
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) {
+        throw new Error('Password does not match!')
+    }
+    return user
 }
 
 userSchema.pre('save', async function (next) {

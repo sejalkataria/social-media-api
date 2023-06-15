@@ -30,7 +30,9 @@ router.get('/users/verifyemail/:id/:token', async (req, res) => {
 
 router.post('/users/login', async (req, res) => {
     try {
-        const user = await findByCredentials(req.body.email, req.body.password)
+        const user = await User.findByCredentials(req.body.email, req.body.password)
+        const token = await user.generateAuthToken()
+        res.status(200).send({ user, token })
     }
     catch (e) {
         res.status(400).send({ e: e.message })
