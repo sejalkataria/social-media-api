@@ -1,6 +1,7 @@
 const express = require('express')
 const multer = require('multer')
 const sharp = require('sharp')
+const jwt = require('jsonwebtoken')
 
 const User = require('../models/user')
 const auth = require('../middleware/auth')
@@ -56,6 +57,39 @@ router.post('/users/login', async (req, res) => {
     catch (e) {
         res.status(400).send({ e: e.message })
     }
+})
+
+//forget password
+router.post('/users/forgetPassword', async (req, res) => {
+    const email = req.body.email
+    try {
+        const user = await User.findByEmail(email)
+        res.status(200).send(user)
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
+//reset password
+router.post('/users/:id/:resetPasswordToken', async (req, res) => {
+    try {
+        const decode = jwt.verify(req.params.resetPasswordToken, process.env.RESET_PASSWORD)
+        const user = await User.findOne({ _id: decode._id, 'resetPasswordToken.token': req.params.resetPasswordToken })
+        if (!user) {
+            throw new Error()
+        }
+        user.password = req.body.password
+        user.resetPasswordToken = user.resetPasswordToken.filter((token) => {
+            return token.token !== req.params.resetPasswordToken
+        })
+        await user.save()
+        res.status(200).send('password changed successfully!')
+    } catch (e) {
+        res.status(401).send({ e: e.message })
+    }
+
+
+
 })
 
 //logout user

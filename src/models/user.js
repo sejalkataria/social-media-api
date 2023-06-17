@@ -49,10 +49,24 @@ const userSchema = new mongoose.Schema({
         token: {
             type: String
         }
+    }],
+    resetPasswordToken: [{
+        token: {
+            type: String
+        }
     }]
 }, {
     timestamps: true
 })
+
+userSchema.methods.toJSON = function () {
+    const user = this
+    const userObject = user.toObject()
+    delete userObject.password
+    delete userObject.tokens
+    delete userObject.profilePicture
+    return userObject
+}
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this
@@ -71,6 +85,17 @@ userSchema.statics.findByCredentials = async function (email, password) {
     if (!isMatch) {
         throw new Error('Password does not match!')
     }
+    return user
+}
+
+userSchema.statics.findByEmail = async function (email) {
+    const user = await User.findOne({ email, emailVerified: true })
+    if (!user) {
+        throw new Error('email not found!')
+    }
+    const resetPassword = jwt.sign({ _id: user._id.toString() }, process.env.RESET_PASSWORD, { expiresIn: '20m' })
+    user.resetPasswordToken = user.resetPasswordToken.concat({ token: resetPassword })
+    await user.save()
     return user
 }
 
