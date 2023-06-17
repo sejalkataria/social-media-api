@@ -109,8 +109,6 @@ router.delete('/users/me', auth, async (req, res) => {
     } catch (e) {
         res.status(400).send(e.message)
     }
-
-
 })
 
 //upload profile picture
@@ -124,4 +122,28 @@ router.post('/users/me/profilePicture', auth, upload.single('avatar'), async (re
         res.status(400).send({ e: e.message })
     }
 )
+
+//follow a user
+router.put('/users/:id/follow', auth, async (req, res) => {
+    if (req.user._id !== req.params._id) {
+        try {
+            const currentUser = req.user
+            const followUser = await User.findById(req.params.id)
+            if (!followUser.followers.includes(currentUser._id)) {
+                await followUser.updateOne({ $push: { followers: currentUser._id } })
+                await currentUser.updateOne({ $push: { following: followUser._id } })
+                res.status(200).send(`you started following ${followUser.userName}`)
+            }
+            else {
+                res.status(403).send(`You already follow user ${followUser.userName}`)
+            }
+        } catch (e) {
+            res.status(500).send({ e: e.message })
+        }
+    }
+    else {
+        res.status(403).send('you can not follow yourself')
+    }
+})
+
 module.exports = router
