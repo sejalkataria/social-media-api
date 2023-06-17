@@ -123,6 +123,21 @@ router.post('/users/me/profilePicture', auth, upload.single('avatar'), async (re
     }
 )
 
+//see profiePicture
+router.get('/users/:id/profilePicture', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if (!user || !user.profilePicture) {
+            throw new Error()
+        }
+        res.set('Content-Type', 'image/png')
+        res.send(user.profilePicture)
+
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
 //follow a user
 router.put('/users/:id/follow', auth, async (req, res) => {
     if (req.user._id !== req.params._id) {
