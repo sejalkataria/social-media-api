@@ -128,11 +128,22 @@ router.get('/users/:id/profilePicture', async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user || !user.profilePicture) {
-            throw new Error()
+            throw new Error('user or profile picture not found!')
         }
         res.set('Content-Type', 'image/png')
         res.send(user.profilePicture)
 
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
+//delete user's profile picture
+router.delete('/users/me/profilePicture', auth, async (req, res) => {
+    try {
+        req.user.profilePicture = undefined
+        await req.user.save()
+        res.send('profile picture deletd successfully!')
     } catch (e) {
         res.status(500).send({ e: e.message })
     }
