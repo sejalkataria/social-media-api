@@ -2,7 +2,8 @@ const mongoose = require('mongoose')
 
 const postSchema = new mongoose.Schema({
     img: {
-        type: Buffer
+        type: Buffer,
+        required: true
     },
     description: {
         type: String,
@@ -13,8 +14,8 @@ const postSchema = new mongoose.Schema({
         default: []
     },
     userId: {
-        id: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: true
     }
 }, {
