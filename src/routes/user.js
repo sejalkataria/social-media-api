@@ -39,7 +39,7 @@ router.get('/users/verifyemail/:id/:token', async (req, res) => {
         if (!user) {
             throw new Error('Invalid Link')
         }
-        await User.updateOne({ _id: user._id, emailVerified: true })
+        await user.updateOne({ _id: user._id, emailVerified: true })
         res.send('email verified successfuly')
     } catch (e) {
         res.status(400).send({ e: e.message })
@@ -77,6 +77,40 @@ router.post('/users/logoutAll', auth, async (req, res) => {
     req.user.tokens = []
     await req.user.save()
     res.send('Logged out from all devices')
+})
+
+//update user
+router.post('/users/me/update', auth, async (req, res) => {
+    const updates = Object.keys(req.body)
+    const allowedUpdates = ["userName", "email", "password", "bio"]
+    const validOperation = updates.every((update) => allowedUpdates.includes(update))
+    if (!validOperation) {
+        throw new Error('This Update is NOT ALLOWED!')
+    }
+    try {
+        updates.forEach((update) => req.user[update] = req.body[update])
+        await req.user.save()
+        res.status(200).send('user updated successfully!')
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
+//see user profile
+router.get('/users/me', auth, async (req, res) => {
+    res.send(req.user)
+})
+
+//delete user
+router.delete('/users/me', auth, async (req, res) => {
+    try {
+        const user = await User.deleteOne({ _id: req.user._id })
+        res.send(req.user)
+    } catch (e) {
+        res.status(400).send(e.message)
+    }
+
+
 })
 
 //upload profile picture
