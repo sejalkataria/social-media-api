@@ -27,7 +27,7 @@ router.post('/users/registration', async (req, res) => {
         await user.save()
         const token = await user.generateAuthToken()
         // const verifyEmail = `/users/verifyemail/${user._id}/${token}`
-        res.status(201).send("Please verify your email")
+        res.status(201).send({ user, token })
     } catch (e) {
         res.status(400).send({ e: e.message })
     }
