@@ -50,4 +50,18 @@ router.patch('/posts/:id/update', auth, async (req, res) => {
     }
 })
 
+//delete a post
+router.delete('/posts/:id', auth, async (req, res) => {
+    try {
+        const post = await Post.findOne({ _id: req.params.id, userId: req.user._id })
+        if (!post) {
+            throw new Error('post not found!')
+        }
+        await Post.deleteOne(post)
+        res.status(200).send('post deleted successfully!')
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
 module.exports = router
