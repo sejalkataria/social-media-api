@@ -19,6 +19,7 @@ const upload = multer({
     }
 })
 
+//upload a post
 router.post('/users/post', auth, upload.single('post'), async (req, res) => {
     if (req.file) {
         const buffer = await sharp(req.file.buffer).resize({ width: 280, height: 280 }).png().toBuffer()
@@ -36,5 +37,17 @@ router.post('/users/post', auth, upload.single('post'), async (req, res) => {
         res.status(400).send({ e: e.message })
     }
 )
+
+//edit a post
+router.patch('/posts/:id/update', auth, async (req, res) => {
+    try {
+        const post = await Post.findOne({ _id: req.params.id, userId: req.user._id })
+        post.description = req.body.description
+        await post.save()
+        res.status(200).send(`description was updated to ${post.description}`)
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
 
 module.exports = router
