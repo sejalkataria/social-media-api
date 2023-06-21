@@ -64,4 +64,17 @@ router.delete('/posts/:id', auth, async (req, res) => {
     }
 })
 
+//see all post uploaded by signed in user
+router.get('/users/me/posts', auth, async (req, res) => {
+    try {
+        const posts = await Post.find({ userId: req.user._id })
+        if (!posts) {
+            throw new Error('No posts found, upload post!')
+        }
+        res.send(posts)
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
 module.exports = router
