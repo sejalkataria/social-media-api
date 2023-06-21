@@ -92,4 +92,29 @@ router.get('/users/:id/posts', auth, async (req, res) => {
     }
 })
 
+//like/dislike user's post whom you follow
+router.put('/posts/:id/like', auth, async (req, res) => {
+    try {
+        const currentUser = req.user
+        const post = await Post.findOne({ _id: req.params.id })
+        if (currentUser.following.includes(post.userId)) {
+            console.log('yes you follow this user')
+            if (!post.likes.includes(currentUser._id)) {
+                await post.updateOne({ $push: { likes: currentUser._id } })
+                res.status(200).send('The post has been liked')
+            }
+            else {
+                await post.updateOne({ $pull: { likes: currentUser._id } })
+                res.status(200).send('The post has been disliked')
+            }
+        }
+        else {
+            console.log(`you do not follow this user, follow one to like posts`)
+        }
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+
+})
+
 module.exports = router
