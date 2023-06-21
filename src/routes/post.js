@@ -77,4 +77,19 @@ router.get('/users/me/posts', auth, async (req, res) => {
     }
 })
 
+//see all posts of a user whom you follow
+router.get('/users/:id/posts', auth, async (req, res) => {
+    if (req.user.following.includes(req.params.id)) {
+        try {
+            const posts = await Post.find({ userId: req.params.id })
+            res.send(posts)
+        } catch (e) {
+            res.status(500).send({ e: e.message })
+        }
+    }
+    else {
+        res.send(`you do not follow ${req.params.id}`)
+    }
+})
+
 module.exports = router
