@@ -134,4 +134,21 @@ router.get('/posts/timeline/all', auth, async (req, res) => {
     }
 })
 
+//comment on user's post
+router.post('/posts/:id/comment', auth, async (req, res) => {
+    try {
+        const currentUser = req.user
+        const post = await Post.findOne({ _id: req.params.id })
+        if (currentUser.following.includes(post.userId)) {
+            await Post.updateOne({ $push: { comments: { comment: req.body.comment, postedBy: req.user._id } } })
+            res.status(200).send('you commented on this post!')
+        }
+        else {
+            res.status(400).send('Please follow the user to comment on their posts!')
+        }
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
 module.exports = router
